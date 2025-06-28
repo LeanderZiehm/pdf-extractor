@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Extraction Results</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <h1>Extraction Results</h1>
+    
+    <h2>Text</h2>
+    <textarea rows="10" cols="80">{{ text }}</textarea>
+
+    <h2>Chapters</h2>
+    <ul>
+        {% for chapter in chapters %}
+            <li><input type="checkbox" name="chapter" value="{{ chapter }}">{{ chapter }}</li>
+        {% endfor %}
+    </ul>
+
+    <h2>Images</h2>
+    <div class="image-gallery">
+        {% for image in images %}
+            <img src="{{ url_for('static', filename='img/' + image) }}" alt="Extracted Image">
+        {% endfor %}
+    </div>
+</body>
+</html>
