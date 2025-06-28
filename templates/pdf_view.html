@@ -1,0 +1,94 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ filename }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <header>
+        <h1>{{ filename }}</h1>
+        <div class="slug-container">
+            <span id="slug-display">{{ slug }}</span>
+            <button id="edit-slug-btn">Edit Slug</button>
+            <div id="edit-slug-form" style="display: none;">
+                <input type="text" id="new-slug-input" value="{{ slug }}">
+                <button id="save-slug-btn">Save</button>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="dropdown">
+            <button class="dropdown-toggle">View Text</button>
+            <div class="dropdown-content">
+                <textarea readonly>{{ text }}</textarea>
+            </div>
+        </div>
+
+        <div class="dropdown">
+            <button class="dropdown-toggle">View Images</button>
+            <div class="dropdown-content">
+                <div class="image-grid">
+                    {% for image in images %}
+                        <div class="image-item">
+                            <img src="{{ url_for('static', filename='img/' + image) }}" alt="Extracted Image">
+                            <div class="image-actions">
+                                <button class="copy-btn" data-clipboard-text="{{ url_for('static', filename='img/' + image, _external=True) }}">Copy Link</button>
+                                <a href="{{ url_for('static', filename='img/' + image) }}" download>Download</a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Dropdown functionality
+            const dropdowns = document.querySelectorAll('.dropdown-toggle');
+            dropdowns.forEach(dropdown => {
+                dropdown.addEventListener('click', function() {
+                    this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'block' ? 'none' : 'block';
+                });
+            });
+
+            // Edit slug functionality
+            const editSlugBtn = document.getElementById('edit-slug-btn');
+            const editSlugForm = document.getElementById('edit-slug-form');
+            const slugDisplay = document.getElementById('slug-display');
+
+            editSlugBtn.addEventListener('click', function() {
+                editSlugForm.style.display = 'block';
+                editSlugBtn.style.display = 'none';
+            });
+
+            const saveSlugBtn = document.getElementById('save-slug-btn');
+            saveSlugBtn.addEventListener('click', function() {
+                const newSlug = document.getElementById('new-slug-input').value;
+                fetch(`/edit_slug/{{ filename }}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `new_slug=${new_slug}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        slugDisplay.textContent = data.new_slug;
+                        window.history.pushState({}, '', `/${data.new_slug}`);
+                        editSlugForm.style.display = 'none';
+                        editSlugBtn.style.display = 'block';
+                    } else {
+                        alert(data.message);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
